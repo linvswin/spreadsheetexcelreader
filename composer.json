@@ -1,5 +1,5 @@
 {
-    "name": "lfontana/Excel",
+    "name": "lfontana/excel",
     "description": "Porting per PHP 5 di SpreadSheetExcelReader",
     "keywords": ["psr", "psr-4"],
     "license": "MIT",
