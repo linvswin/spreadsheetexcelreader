@@ -1,0 +1,17 @@
+{
+    "name": "lfontana/Excel",
+    "description": "Porting per PHP 5 di SpreadSheetExcelReader",
+    "keywords": ["psr", "psr-4"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Leonardo Fontana",
+            "homepage": ""
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "SpreadsheetExcelReader\\": "src"
+        }
+    }
+}
