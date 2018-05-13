@@ -1,5 +1,8 @@
 <?php
 namespace SpreadsheetExcelReader;
+
+use SpreadsheetExcelReader\Exceptions\FileNotValidException;
+
 /**
  * A class for reading Microsoft Excel Spreadsheets.
  *
@@ -336,11 +339,11 @@ class Reader
         $substreamType = ord($this->data[$pos + 6]) | ord($this->data[$pos + 7]) << 8;
 
         if ( ($version != self::SPREADSHEET_EXCEL_READER_BIFF8) && ($version != self::SPREADSHEET_EXCEL_READER_BIFF7)) {
-            return false;
+            throw new FileNotValidException();
         }
 
         if ($substreamType != self::SPREADSHEET_EXCEL_READER_WORKBOOKGLOBALS) {
-            return false;
+            throw new FileNotValidException();
         }
         $pos += $length + 4;
 
