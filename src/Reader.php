@@ -516,6 +516,7 @@ class Reader
                     }
                     else {
                         $isdate = FALSE;
+                        $formatstr = false;
                         if ($indexCode > 0) {
                             if (isset($this->formatRecords[$indexCode]))
                                 $formatstr = $this->formatRecords[$indexCode];
@@ -579,7 +580,7 @@ class Reader
 
         foreach ($this->boundsheets as $key => $val) {
             $this->sn = $key;
-            $this->_parsesheet($val['offset']);
+            $this->parseSheet($val['offset']);
         }
         return true;
 
@@ -592,7 +593,7 @@ class Reader
      * @param todo
      * @todo fix return codes
      */
-    public function _parsesheet($spos)
+    protected function parseSheet($spos)
     {
         $cont = true;
         // read BOF
@@ -915,7 +916,7 @@ class Reader
         return $value;
     }
 
-    public function _encodeUTF16($string)
+    protected function _encodeUTF16(string $string) : string
     {
         $result = $string;
         if ($this->_defaultEncoding) {
@@ -931,7 +932,7 @@ class Reader
         return $result;
     }
 
-    public function _GetInt4d($data, $pos)
+    protected function _GetInt4d($data, $pos)
     {
         $value = ord($data[$pos]) | (ord($data[$pos + 1]) << 8) | (ord($data[$pos + 2]) << 16) | (ord($data[$pos + 3]) << 24);
         if ($value >= 4294967294)
@@ -942,5 +943,3 @@ class Reader
     }
 
 }
-
-?>
