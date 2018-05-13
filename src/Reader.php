@@ -25,7 +25,7 @@ namespace SpreadsheetExcelReader;
  * @see        OLE, Spreadsheet_Excel_Writer
  */
 
-class Spreadsheet_Excel_Reader
+class Reader
 {
 
     const SPREADSHEET_EXCEL_READER_BIFF8 = 0x600;
@@ -122,7 +122,7 @@ class Spreadsheet_Excel_Reader
     /**
      * OLE object for reading the file
      *
-     * @var OLE object
+     * @var OLERead object
      * @access private
      */
     protected $_ole;
