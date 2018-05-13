@@ -308,26 +308,14 @@ class Reader
      * @access public
      * @param filename
      * @todo return a valid value
+     * @throws FileNotValidException|NoContentException|NotReadableException
      */
     public function read($sFileName)
     {
         $res = $this->_ole->read($sFileName);
-
-        // oops, something goes wrong (Darko Miljanovic)
-        if ($res === false) {
-            // check error code
-            if ($this->_ole->error == 1) {
-            // bad file
-                die('The filename ' . $sFileName . ' is not readable');
-            }
-            // check other error codes here (eg bad fileformat, etc...)
-        }
-
         $this->data = $this->_ole->getWorkBook();
 
-
-
-        $this->_parse();
+        $this->parse();
     }
 
 
@@ -337,7 +325,7 @@ class Reader
      * @access private
      * @return bool
      */
-    public function _parse()
+    protected function parse()
     {
         $pos = 0;
 
@@ -346,7 +334,6 @@ class Reader
 
         $version = ord($this->data[$pos + 4]) | ord($this->data[$pos + 5]) << 8;
         $substreamType = ord($this->data[$pos + 6]) | ord($this->data[$pos + 7]) << 8;
-        //echo "Start parse code=".base_convert($code,10,16)." version=".base_convert($version,10,16)." substreamType=".base_convert($substreamType,10,16).""."\n";
 
         if ( ($version != self::SPREADSHEET_EXCEL_READER_BIFF8) && ($version != self::SPREADSHEET_EXCEL_READER_BIFF7)) {
             return false;
@@ -365,7 +352,7 @@ class Reader
                 case self::SPREADSHEET_EXCEL_READER_TYPE_SST :
                     $spos = $pos + 4;
                     $limitpos = $spos + $length;
-                    $uniqueStrings = $this->_GetInt4d($this->data, $spos + 4);
+                    $uniqueStrings = $this->getInt4d($this->data, $spos + 4);
                     $spos += 8;
                     for ($i = 0; $i < $uniqueStrings; $i++) {
                         // Read in the number of characters
@@ -397,7 +384,7 @@ class Reader
 
                         if ($extendedString) {
                                                   // Read in cchExtRst
-                            $extendedRunLength = $this->_GetInt4d($this->data, $spos);
+                            $extendedRunLength = $this->getInt4d($this->data, $spos);
                             $spos += 4;
                         }
 
@@ -461,7 +448,7 @@ class Reader
 
                             }
                         }
-                        $retstr = ($asciiEncoding) ? $retstr : $this->_encodeUTF16($retstr);
+                        $retstr = ($asciiEncoding) ? $retstr : $this->encodeUTF16($retstr);
                         if ($richString) {
                             $spos += 4 * $formattingRuns;
                         }
@@ -547,7 +534,7 @@ class Reader
                     $this->nineteenFour = (ord($this->data[$pos + 4]) == 1);
                     break;
                 case self::SPREADSHEET_EXCEL_READER_TYPE_BOUNDSHEET :
-                    $rec_offset = $this->_GetInt4d($this->data, $pos + 4);
+                    $rec_offset = $this->getInt4d($this->data, $pos + 4);
                     $rec_typeFlag = ord($this->data[$pos + 8]);
                     $rec_visibilityFlag = ord($this->data[$pos + 9]);
                     $rec_length = ord($this->data[$pos + 10]);
@@ -558,7 +545,7 @@ class Reader
                             $rec_name = substr($this->data, $pos + 12, $rec_length);
                         }
                         else {
-                            $rec_name = $this->_encodeUTF16(substr($this->data, $pos + 12, $rec_length * 2));
+                            $rec_name = $this->encodeUTF16(substr($this->data, $pos + 12, $rec_length * 2));
                         }
                     }
                     elseif ($version == self::SPREADSHEET_EXCEL_READER_BIFF7) {
@@ -653,7 +640,7 @@ class Reader
                 case self::SPREADSHEET_EXCEL_READER_TYPE_RK2 :
                     $row = ord($this->data[$spos]) | ord($this->data[$spos + 1]) << 8;
                     $column = ord($this->data[$spos + 2]) | ord($this->data[$spos + 3]) << 8;
-                    $rknum = $this->_GetInt4d($this->data, $spos + 6);
+                    $rknum = $this->getInt4d($this->data, $spos + 6);
                     $numValue = $this->_GetIEEE754($rknum);
                     if ($this->isDate($spos)) {
                         list($string, $raw) = $this->createDate($numValue);
@@ -672,7 +659,7 @@ class Reader
                     $row = ord($this->data[$spos]) | ord($this->data[$spos + 1]) << 8;
                     $column = ord($this->data[$spos + 2]) | ord($this->data[$spos + 3]) << 8;
                     $xfindex = ord($this->data[$spos + 4]) | ord($this->data[$spos + 5]) << 8;
-                    $index = $this->_GetInt4d($this->data, $spos + 6);
+                    $index = $this->getInt4d($this->data, $spos + 6);
                     $this->addcell($row, $column, $this->sst[$index]);
                     break;
                 case self::SPREADSHEET_EXCEL_READER_TYPE_MULRK :
@@ -682,7 +669,7 @@ class Reader
                     $columns = $colLast - $colFirst + 1;
                     $tmppos = $spos + 4;
                     for ($i = 0; $i < $columns; $i++) {
-                        $numValue = $this->_GetIEEE754($this->_GetInt4d($this->data, $tmppos + 2));
+                        $numValue = $this->_GetIEEE754($this->getInt4d($this->data, $tmppos + 2));
                         if ($this->isDate($tmppos - 4)) {
                             list($string, $raw) = $this->createDate($numValue);
                         }
@@ -851,8 +838,8 @@ class Reader
 
     public function createNumber($spos)
     {
-        $rknumhigh = $this->_GetInt4d($this->data, $spos + 10);
-        $rknumlow = $this->_GetInt4d($this->data, $spos + 6);
+        $rknumhigh = $this->getInt4d($this->data, $spos + 10);
+        $rknumlow = $this->getInt4d($this->data, $spos + 6);
         $sign = ($rknumhigh & 0x80000000) >> 31;
         $exp = ($rknumhigh & 0x7ff00000) >> 20;
         $mantissa = (0x100000 | ($rknumhigh & 0x000fffff));
@@ -916,7 +903,7 @@ class Reader
         return $value;
     }
 
-    protected function _encodeUTF16(string $string) : string
+    protected function encodeUTF16(string $string) : string
     {
         $result = $string;
         if ($this->_defaultEncoding) {
@@ -932,14 +919,9 @@ class Reader
         return $result;
     }
 
-    protected function _GetInt4d($data, $pos)
+    protected function getInt4d($data, $pos)
     {
-        $value = ord($data[$pos]) | (ord($data[$pos + 1]) << 8) | (ord($data[$pos + 2]) << 16) | (ord($data[$pos + 3]) << 24);
-        if ($value >= 4294967294)
-            {
-            $value = -2;
-        }
-        return $value;
+        return OLERead::GetInt4d($data, $pos);
     }
 
 }

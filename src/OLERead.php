@@ -1,5 +1,10 @@
 <?php
 namespace SpreadsheetExcelReader;
+
+use SpreadsheetExcelReader\Exceptions\NotReadableException;
+use SpreadsheetExcelReader\Exceptions\NoContentException;
+use SpreadsheetExcelReader\Exceptions\FileNotValidException;
+
 /**
  * A class for reading Microsoft Excel Spreadsheets.
  *
@@ -42,6 +47,7 @@ class OLERead
     const TYPE_POS = 0x42;
     const START_BLOCK_POS = 0x74;
     const SIZE_POS = 0x78;
+    const MAX_IT_VALUE = 4294967294;
 
     protected static $IDENTIFIER_OLE = null;
 
@@ -56,7 +62,7 @@ class OLERead
     public static function GetInt4d( $data, $pos)
     {
         $value = ord($data[$pos]) | (ord($data[$pos + 1]) << 8) | (ord($data[$pos + 2]) << 16) | (ord($data[$pos + 3]) << 24);
-        if ($value >= 4294967294)
+        if ($value >= self::MAX_IT_VALUE)
             {
             $value = -2;
         }
@@ -68,18 +74,15 @@ class OLERead
         
     	// check if file exist and is readable (Darko Miljanovic)
         if (!is_readable($sFileName)) {
-            $this->error = 1;
-            return false;
+            throw NotReadableException::default($sFileName);
         }
 
         $this->data = @file_get_contents($sFileName);
         if (!$this->data) {
-            $this->error = 1;
-            return false;
+            throw NoContentException::default($sFileName);
         }
         if (substr($this->data, 0, 8) != self::$IDENTIFIER_OLE) {
-            $this->error = 1;
-            return false;
+            throw new FileNotValidException($sFileName);
         }
         $this->numBigBlockDepotBlocks = self::GetInt4d($this->data, self::NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
         $this->sbdStartBlock = self::GetInt4d($this->data, self::SMALL_BLOCK_DEPOT_BLOCK_POS);
