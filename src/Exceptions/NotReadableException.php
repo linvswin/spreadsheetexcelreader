@@ -1,6 +1,6 @@
 <?php
 
-namespace SpreadsheetExcelReader\Exceptions;
+namespace Spreadsheet\Excel\Exceptions;
 
 class NotReadableException extends \Exception
 {

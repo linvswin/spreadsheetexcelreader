@@ -1,6 +1,6 @@
 <?php
 
-namespace SpreadsheetExcelReader\Exceptions;
+namespace Spreadsheet\Excel\Exceptions;
 
 class FileNotValidException extends \Exception{
     public static function default(string $fileName): self{

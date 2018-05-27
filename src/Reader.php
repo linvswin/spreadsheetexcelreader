@@ -1,5 +1,5 @@
 <?php
-namespace SpreadsheetExcelReader;
+namespace Spreadsheet\Excel;
 
 use SpreadsheetExcelReader\Exceptions\FileNotValidException;
 
@@ -576,6 +576,14 @@ class Reader
 
     }
 
+    protected function getDataValue($pos, int $length = 0) : string{
+        $value = 0;
+        for ($i=0; $i < $length ; $i++) { 
+            $value = $value | \ord($this->data[$pos + $i]) << 8 * $i;
+        }
+        return $value;
+    }
+
     /**
      * Parse a worksheet
      *
@@ -586,11 +594,11 @@ class Reader
     protected function parseSheet($spos)
     {
         $cont = true;
-        // read BOF
-        $code = ord($this->data[$spos]) | ord($this->data[$spos + 1]) << 8;
-        $length = ord($this->data[$spos + 2]) | ord($this->data[$spos + 3]) << 8;
-
-        $version = ord($this->data[$spos + 4]) | ord($this->data[$spos + 5]) << 8;
+            // read BOF
+        $code = $this->getDataValue($spos,2);
+        $length =$this->getDataValue($spos + 2, 2);
+        $version = $this->getDataValue($spos + 4, 2);
+        
         $substreamType = ord($this->data[$spos + 6]) | ord($this->data[$spos + 7]) << 8;
 
         if ( ($version != self::SPREADSHEET_EXCEL_READER_BIFF8) && ($version != self::SPREADSHEET_EXCEL_READER_BIFF7)) {
@@ -820,7 +828,7 @@ class Reader
      * @param integer The raw Excel value to convert
      * @return array First element is the converted date, the second element is number a unix timestamp
      */
-    public function createDate($numValue)
+    public function createDate($numValue) : array
     {
         if ($numValue > 1) {
             $utcDays = $numValue - ($this->nineteenFour ? self::SPREADSHEET_EXCEL_READER_UTCOFFSETDAYS1904 : self::SPREADSHEET_EXCEL_READER_UTCOFFSETDAYS);
@@ -877,14 +885,6 @@ class Reader
         }
         else {
 //mmp
-// first comment out the previously existing 7 lines of code here
-//                $tmp = unpack("d", pack("VV", 0, ($rknum & 0xfffffffc)));
-//                //$value = $tmp[''];
-//                if (array_key_exists(1, $tmp)) {
-//                    $value = $tmp[1];
-//                } else {
-//                    $value = $tmp[''];
-//                }
 // I got my info on IEEE754 encoding from
 // http://research.microsoft.com/~hollasch/cgindex/coding/ieeefloat.html
 // The RK format calls for using only the most significant 30 bits of the
