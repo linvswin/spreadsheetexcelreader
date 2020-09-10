@@ -831,7 +831,7 @@ class Reader
     public function createDate($numValue) : array
     {
         if ($numValue > 1) {
-            $utcDays = $numValue - ($this->nineteenFour ? self::SPREADSHEET_EXCEL_READER_UTCOFFSETDAYS1904 : self::SPREADSHEET_EXCEL_READER_UTCOFFSETDAYS);
+            $utcDays = $numValue - ($this->nineteenFour ? self::SPREADSHEET_EXCEL_READER_UTCOFFSETDAYS1904 : self::SPREADSHEET_EXCEL_READER_UTCOFFSETDAYS)-1;
             $utcValue = round( ($utcDays + 1) * self::SPREADSHEET_EXCEL_READER_MSINADAY);
             $string = date($this->curformat, $utcValue);
             $raw = $utcValue;
