@@ -1,12 +1,12 @@
 {
-    "name": "lfontana/excel",
-    "description": "Porting per PHP 7 di SpreadSheetExcelReader",
+    "name": "linvswin/spreadsheetexcelreader",
+    "description": "Porting per PHP 7 di SpreadSheetExcelReader fork of lfontana/excel",
     "keywords": ["psr", "psr-4"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Leonardo Fontana",
-            "homepage": "https://github.com/LeonardoFontana"
+            "name": "M&J",
+            "homepage": "https://github.com/linvswin"
         }
     ],
     "require": {
